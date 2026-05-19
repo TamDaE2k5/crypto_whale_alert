@@ -10,6 +10,7 @@ services:
       - "7077:7077"
     volumes:
       - ../services/processor:/opt/spark/work-dir/app
+      - ../utils:/opt/spark/work-dir/app/utils
     networks:
       - net
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
@@ -25,6 +26,7 @@ services:
       - SPARK_MASTER=spark://spark-master:7077
     volumes:
       - ../services/processor:/opt/spark/work-dir/app
+      - ../utils:/opt/spark/work-dir/app/utils
     networks:
       - net
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
