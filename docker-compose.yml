@@ -1,18 +1,22 @@
 name: realtime_crypto
 
-# services:
-  # notifier:
-  #   build:
-  #     context: ./services/notifier
-  #   container_name: notifier
-  #   depends_on:
-  #     - kafka
-  #   environment:
-  #     - KAFKA_BROKER=kafka:29092
-  #     - TELEGRAM_TOKEN=8767281878:AAGahCNd3_zrjmrj5JW595kFKc_aFmgz-l0 
-  #     - TELEGRAM_CHAT_ID=6630100534 
-  #   networks:
-  #     - net
+services:
+  notifier:
+    build:
+      context: ./services/notifier
+      dockerfile: Dockerfile.bot
+    container_name: notifier
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BROKER=kafka:29092
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+    volumes:
+      - ./services/notifier:/app
+      - ./utils:/app/utils
+    networks:
+      - net
 
 include:
   - ./deployment/docker-compose.kafka.yml

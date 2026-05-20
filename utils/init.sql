@@ -28,3 +28,20 @@ CREATE TABLE IF NOT EXISTS alert_history (
     is_buyer_maker BOOLEAN,
     alert_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- TABLE OHLCV
+CREATE TABLE IF NOT EXISTS ohlcv_candles(
+    id SERIAL PRIMARY KEY,
+    symbol VARCHAR(20) NOT NULL,
+    timeframe VARCHAR(10) NOT NULL, -- 5m, 10m
+    start_time TIMESTAMP NOT NULL,  -- time for candles
+    end_time TIMESTAMP NOT NULL,
+    open_price NUMERIC(18, 8) NOT NULL,
+    high_price NUMERIC(18, 8) NOT NULL,
+    low_price NUMERIC(18, 8) NOT NULL,
+    close_price NUMERIC(18, 8) NOT NULL,
+    volume NUMERIC(18, 8) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE ohlcv_candles 
+ADD CONSTRAINT unique_candle UNIQUE (symbol, timeframe, start_time); -- update candles easy

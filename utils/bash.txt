@@ -1,5 +1,5 @@
 Spark job
-docker exec -it spark-master /opt/spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 /opt/spark/work-dir/app/main.py
+docker exec -it spark-master /opt/spark/bin/spark-submit --driver-memory 512m --executor-memory 1g --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 /opt/spark/work-dir/app/alert_job.py
 
 Service
 python .\services\ingestor\main.py
@@ -7,5 +7,17 @@ python .\services\api\main.py
 python .\services\notifier\main.py
 
 Data base
+Redis keys: 
+    - latest_alerts : follow symbol
+    - rate_limit:{symbol} : time to life of symbol 
+    - recent_alerts : 100 alert latest
+    - 
 docker exec -it redis redis-cli
 docker exec -it postgres psql -U postgres -d db_name
+docker exec -it postgres psql -U admin -d whale_alert
+
+POSTGRES
+- \dt 
+- \d 
+- \q
+- 

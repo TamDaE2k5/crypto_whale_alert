@@ -85,9 +85,6 @@ def main():
             "BTCUSDT": 0,
             "ETHUSDT": 1,
             "BNBUSDT": 2,
-            "SOLUSDT": 3,
-            "XRPUSDT": 4,
-            "ADAUSDT": 5,
         }
         try:
             data = json.loads(mess)
