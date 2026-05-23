@@ -1,0 +1,23 @@
+{
+  "name": "rebuild_realtime_crypto",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TamDaE2k5/crypto_whale_alert.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TamDaE2k5/crypto_whale_alert/issues"
+  },
+  "homepage": "https://github.com/TamDaE2k5/crypto_whale_alert#readme",
+  "dependencies": {
+    "jsdom": "^29.1.1"
+  }
+}

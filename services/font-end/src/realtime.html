@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📈 Real-time Candlestick Chart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card: #131825;
+            --border: #1e2738;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --blue: #3b82f6;
+            --green: #22c55e;
+            --red: #ef4444;
+            --cyan: #06b6d4;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+
+        /* Header */
+        header { display: flex; justify-content: space-between; align-items: center; padding: 14px 28px; background: var(--card); border-bottom: 1px solid var(--border); }
+        header h1 { font-size: 18px; font-weight: 800; }
+        header a { color: var(--blue); text-decoration: none; font-size: 13px; }
+
+        /* Toolbar */
+        .toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 28px; background: var(--card); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+
+        /* Coin Tabs */
+        .coin-tabs { display: flex; gap: 6px; }
+        .coin-tab {
+            padding: 10px 20px; border-radius: 8px; cursor: pointer;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--muted); font-weight: 700; font-size: 14px;
+            transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 2px;
+        }
+        .coin-tab:hover { border-color: var(--blue); color: var(--text); }
+        .coin-tab.active { background: rgba(59,130,246,0.15); border-color: var(--blue); color: var(--blue); }
+        .coin-tab .tab-price { font-size: 12px; font-weight: 600; font-family: monospace; }
+
+        /* Separator */
+        .sep { width: 1px; height: 32px; background: var(--border); }
+
+        /* Timeframe Tabs */
+        .tf-tabs { display: flex; gap: 4px; }
+        .tf-tab {
+            padding: 6px 14px; border-radius: 6px; cursor: pointer;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--muted); font-weight: 600; font-size: 13px;
+            transition: all 0.2s;
+        }
+        .tf-tab:hover { border-color: var(--blue); color: var(--text); }
+        .tf-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+        /* Price Display */
+        .price-bar { padding: 14px 28px; display: flex; align-items: baseline; gap: 16px; }
+        .price-big { font-size: 36px; font-weight: 800; font-family: monospace; }
+        .price-big.up { color: var(--green); }
+        .price-big.down { color: var(--red); }
+        .price-label { font-size: 14px; color: var(--muted); }
+        .price-info { font-size: 12px; color: var(--muted); margin-left: auto; font-family: monospace; }
+
+        /* Chart */
+        .chart-wrap { flex: 1; padding: 0 16px 16px 16px; min-height: 400px; display: flex; flex-direction: column; }
+        #priceChart { flex: 1; width: 100%; min-height: 400px; position: relative; }
+
+        /* Toast */
+        .toast-area { position: fixed; top: 80px; right: 20px; z-index: 999; width: 280px; }
+        .toast { background: rgba(239,68,68,0.9); padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: white; animation: fadeIn 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📈 Real-time Candlestick Chart</h1>
+        <a href="/dashboard">🐳 Whale Dashboard</a>
+    </header>
+
+    <!-- Toolbar: coin tabs + timeframe tabs -->
+    <div class="toolbar">
+        <div class="coin-tabs" id="coin-tabs"></div>
+        <div class="sep"></div>
+        <div class="tf-tabs">
+            <button class="tf-tab active" id="tf-1m" onclick="switchTimeframe('1m')">1m</button>
+            <button class="tf-tab" id="tf-5m" onclick="switchTimeframe('5m')">5m</button>
+        </div>
+    </div>
+
+    <!-- Big price display -->
+    <div class="price-bar">
+        <span class="price-big" id="big-price">$--</span>
+        <span class="price-label" id="big-label">BTCUSDT</span>
+        <span class="price-info" id="candle-count">Candles: --</span>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrap">
+        <div id="priceChart" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <!-- Alert toasts -->
+    <div class="toast-area" id="toasts"></div>
+
+    <script>
+    const COINS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'];
+    
+    let activeCoin = 'BTCUSDT';
+    let activeTimeframe = '1m';
+    const latestPrice = {};
+    
+    let chart;
+    let candleSeries;
+    let volumeSeries;
+    let currentCandle = null;
+    let candleCache = {}; // { "BTCUSDT:1m": [...], "ETHUSDT:1m": [...] }
+
+    // ── Build Tabs ──
+    const tabsEl = document.getElementById('coin-tabs');
+    COINS.forEach(coin => {
+        const tab = document.createElement('div');
+        tab.className = 'coin-tab' + (coin === activeCoin ? ' active' : '');
+        tab.id = 'tab-' + coin;
+        tab.innerHTML = `<span>${coin.replace('USDT','')}</span><span class="tab-price" id="tp-${coin}">--</span>`;
+        tab.onclick = () => switchCoin(coin);
+        tabsEl.appendChild(tab);
+    });
+
+    function switchCoin(coin) {
+        document.getElementById('tab-' + activeCoin).classList.remove('active');
+        activeCoin = coin;
+        document.getElementById('tab-' + coin).classList.add('active');
+        document.getElementById('big-label').textContent = coin;
+        loadCandles();
+    }
+
+    function switchTimeframe(tf) {
+        document.getElementById('tf-' + activeTimeframe).classList.remove('active');
+        activeTimeframe = tf;
+        document.getElementById('tf-' + tf).classList.add('active');
+        loadCandles();
+    }
+
+    // ── Chart ──
+    function initChart() {
+        try {
+            const container = document.getElementById('priceChart');
+            container.innerHTML = '';
+            
+            chart = LightweightCharts.createChart(container, {
+                layout: {
+                    background: { type: 'solid', color: '#0b0f19' },
+                    textColor: '#64748b',
+                    fontFamily: 'Inter, sans-serif',
+                },
+                grid: {
+                    vertLines: { color: 'rgba(30,39,56,0.5)' },
+                    horzLines: { color: 'rgba(30,39,56,0.5)' },
+                },
+                crosshair: {
+                    mode: 0, // Hardcode 0 (Normal) to avoid CrosshairMode undefined issues
+                },
+                rightPriceScale: {
+                    borderColor: 'rgba(30,39,56,0.5)',
+                },
+                timeScale: {
+                    borderColor: 'rgba(30,39,56,0.5)',
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+            });
+
+            candleSeries = chart.addCandlestickSeries({
+                upColor: '#22c55e',
+                downColor: '#ef4444',
+                borderVisible: false,
+                wickUpColor: '#22c55e',
+                wickDownColor: '#ef4444',
+            });
+
+            try {
+                volumeSeries = chart.addHistogramSeries({
+                    color: '#26a69a',
+                    priceFormat: { type: 'volume' },
+                    priceScaleId: '',
+                });
+                volumeSeries.priceScale().applyOptions({
+                    scaleMargins: { top: 0.85, bottom: 0 },
+                });
+            } catch (e) {
+                console.error('Failed to add volume series:', e);
+                volumeSeries = null;
+            }
+
+            // Resize observer
+            new ResizeObserver(entries => {
+                if (entries.length === 0 || entries[0].target !== container) return;
+                const { width, height } = entries[0].contentRect;
+                chart.applyOptions({ width, height });
+            }).observe(container);
+            
+            document.getElementById('candle-count').textContent = 'Chart Init: Success';
+        } catch (e) {
+            console.error('initChart error:', e);
+            document.getElementById('candle-count').textContent = 'Init Error: ' + e.message;
+        }
+    }
+
+    function deduplicateCandles(candles) {
+        // Lightweight Charts requires unique timestamps — keep last occurrence
+        const map = new Map();
+        candles.forEach(c => map.set(c.time, c));
+        return Array.from(map.values()).sort((a, b) => a.time - b.time);
+    }
+
+    async function loadCandles() {
+        const cacheKey = `${activeCoin}:${activeTimeframe}`;
+        const countEl = document.getElementById('candle-count');
+        try {
+            const res = await fetch(`/api/market/candles?symbol=${activeCoin}&timeframe=${activeTimeframe}&limit=200`);
+            const data = await res.json();
+            
+            if (data.candles && data.candles.length > 0) {
+                const chartData = data.candles.map(c => ({
+                    time: Math.floor(new Date(c.timestamp + 'Z').getTime() / 1000),
+                    open: parseFloat(c.open),
+                    high: parseFloat(c.high),
+                    low: parseFloat(c.low),
+                    close: parseFloat(c.close),
+                    volume: parseFloat(c.volume || 0)
+                }));
+                
+                const deduped = deduplicateCandles(chartData);
+                
+                try {
+                    if (typeof candleSeries === 'undefined') {
+                        throw new Error('candleSeries is undefined');
+                    }
+                    if (typeof candleSeries.setData !== 'function') {
+                        throw new Error('candleSeries.setData is not a function (type: ' + typeof candleSeries.setData + ')');
+                    }
+                    
+                    candleSeries.setData(deduped.map(c => ({
+                        time: c.time, open: c.open, high: c.high, low: c.low, close: c.close
+                    })));
+                    
+                    if (volumeSeries && typeof volumeSeries.setData === 'function') {
+                        volumeSeries.setData(deduped.map(c => ({
+                            time: c.time,
+                            value: c.volume,
+                            color: c.close >= c.open ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'
+                        })));
+                    }
+                    
+                    currentCandle = { ...deduped[deduped.length - 1] };
+                    candleCache[cacheKey] = deduped;
+                    
+                    countEl.textContent = `Candles: ${deduped.length} | Status: Success`;
+                    chart.timeScale().fitContent();
+                } catch (err) {
+                    countEl.textContent = `Candles: ${deduped.length} | Chart Error: ${err.message}`;
+                    console.error('Chart error:', err);
+                }
+            } else {
+                candleSeries.setData([]);
+                volumeSeries.setData([]);
+                currentCandle = null;
+                countEl.textContent = 'Candles: 0 (waiting for data...)';
+            }
+        } catch (e) {
+            console.error('Failed to load candles', e);
+            countEl.textContent = `Fetch Error: ${e.message}`;
+        }
+    }
+
+    // ── WebSocket ──
+    function connectWS() {
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/prices');
+        ws.onopen = () => console.log('[WS] Prices connected');
+        ws.onmessage = (e) => {
+            const msg = JSON.parse(e.data);
+            if (msg.type !== 'price_update') return;
+
+            const { symbol, price } = msg;
+            const prev = latestPrice[symbol] || price;
+            latestPrice[symbol] = price;
+
+            // Update tab price for ALL coins
+            const tp = document.getElementById('tp-' + symbol);
+            if (tp) {
+                tp.textContent = '$' + price.toLocaleString();
+                tp.style.color = price >= prev ? '#22c55e' : '#ef4444';
+            }
+
+            // Update active coin display & current candle
+            if (symbol === activeCoin) {
+                const bp = document.getElementById('big-price');
+                bp.textContent = '$' + price.toLocaleString();
+                bp.className = 'price-big ' + (price >= prev ? 'up' : 'down');
+                
+                // Update live candle
+                if (currentCandle) {
+                    currentCandle.close = price;
+                    if (price > currentCandle.high) currentCandle.high = price;
+                    if (price < currentCandle.low) currentCandle.low = price;
+                    candleSeries.update({
+                        time: currentCandle.time,
+                        open: currentCandle.open,
+                        high: currentCandle.high,
+                        low: currentCandle.low,
+                        close: currentCandle.close
+                    });
+                }
+            }
+        };
+        ws.onclose = () => {
+            console.log('[WS] Prices disconnected, reconnecting...');
+            setTimeout(connectWS, 2000);
+        };
+        ws.onerror = (e) => console.error('[WS] Prices error', e);
+    }
+
+    // Alert WebSocket
+    function connectAlertWS() {
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/alerts');
+        ws.onopen = () => console.log('[WS] Alerts connected');
+        ws.onmessage = (e) => {
+            const msg = JSON.parse(e.data);
+            if (msg.type !== 'whale_alert') return;
+            const area = document.getElementById('toasts');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = '🐳 ' + msg.symbol + ': $' + msg.total_usd_value.toLocaleString();
+            area.appendChild(t);
+            setTimeout(() => t.remove(), 6000);
+        };
+        ws.onclose = () => setTimeout(connectAlertWS, 2000);
+    }
+
+    // ── Auto-refresh candles ──
+    setInterval(() => {
+        if (!document.hidden) loadCandles();
+    }, 15000); // Refresh mỗi 15 giây để lấy nến mới từ DB
+
+    // ── Launch ──
+    initChart();
+    loadCandles();
+    connectWS();
+    connectAlertWS();
+    </script>
+</body>
+</html>

@@ -65,3 +65,37 @@ def save_ohlcv(symbol, timeframe, timestamp, open, high, low, close, volume, buy
             cur.close()
         if conn:
             conn.close()
+
+
+# ── API Query Functions ──
+
+def get_candles(symbol="BTCUSDT", timeframe="1m", limit=100):
+    """Lấy nến OHLCV từ PostgreSQL"""
+    conn = None
+    try:
+        conn = get_pg_internal_connection()
+        cur = conn.cursor()
+        cur.execute(
+            """SELECT symbol, timeframe, timestamp, open, high, low, close, volume, buyer, cnt
+               FROM ohlcv_candles 
+               WHERE symbol = %s AND timeframe = %s
+               ORDER BY timestamp DESC LIMIT %s""",
+            (symbol, timeframe, limit)
+        )
+        rows = cur.fetchall()
+        return [
+            {
+                "symbol": r[0], "timeframe": r[1], 
+                "timestamp": r[2].isoformat() if r[2] else None,
+                "open": float(r[3]), "high": float(r[4]), 
+                "low": float(r[5]), "close": float(r[6]),
+                "volume": float(r[7]), "buyer": r[8], "cnt": r[9]
+            }
+            for r in rows
+        ]
+    except Exception as e:
+        print(f'[Postgre] get_candles error: {e}')
+        return []
+    finally:
+        if conn:
+            conn.close()

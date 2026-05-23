@@ -56,3 +56,19 @@ def set_candle(symbol, timeframe, timestamp, open, high, low, close, volume, buy
     except Exception as e:
         print(f"[Redis] Lỗi lưu nến OHLCV: {e}")
 
+
+# ── API Query Functions ──
+
+def get_latest_candle(symbol, timeframe):
+    """Lấy nến đang chạy (chưa đóng) từ Redis"""
+    try:
+        r = get_internal_redis_client()
+        key = f"ohlcv:{timeframe}:{symbol}"
+        data = r.get(key)
+        if data:
+            return json.loads(data)
+        return None
+    except Exception as e:
+        print(f"[Redis] get_latest_candle error: {e}")
+        return None
+

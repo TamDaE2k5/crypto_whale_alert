@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐳 Whale Watch Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .nav-link { color: #3b82f6; text-decoration: none; font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: 8px; background: rgba(59,130,246,0.1); transition: all 0.2s; }
+        .nav-link:hover { background: rgba(59,130,246,0.2); }
+    </style>
+</head>
+<body>
+    <header id="app-header">
+        <div class="header-left">
+            <span class="logo">🐳</span>
+            <h1>Whale Watch</h1>
+            <span class="badge badge-version">v1.0</span>
+        </div>
+        <div class="header-right">
+            <a href="/realtime" class="nav-link">📈 Realtime Chart</a>
+            <div id="connection-status" class="status-indicator offline">
+                <span class="status-dot"></span>
+                <span class="status-text">Đang kết nối...</span>
+            </div>
+            <span class="clock" id="clock">--:--:--</span>
+        </div>
+    </header>
+
+    <main id="app-main">
+        <section class="stats-row" id="stats-section">
+            <div class="stat-card"><div class="stat-icon">⚡</div><div class="stat-content"><span class="stat-value" id="stat-alerts-value">0</span><span class="stat-label">Alerts hôm nay</span></div></div>
+            <div class="stat-card"><div class="stat-icon">🐳</div><div class="stat-content"><span class="stat-value" id="stat-biggest-value">$0</span><span class="stat-label">Cá mập lớn nhất</span></div></div>
+            <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-content"><span class="stat-value" id="stat-active-value">N/A</span><span class="stat-label">Coin hot nhất</span></div></div>
+            <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-content"><span class="stat-value" id="stat-volume-value">$0</span><span class="stat-label">Tổng volume</span></div></div>
+        </section>
+
+        <section class="ticker-row" id="ticker-section">
+            <div class="ticker-card" id="ticker-BTCUSDT"><span class="ticker-symbol">BTC</span><span class="ticker-price" id="price-BTCUSDT">--</span></div>
+            <div class="ticker-card" id="ticker-ETHUSDT"><span class="ticker-symbol">ETH</span><span class="ticker-price" id="price-ETHUSDT">--</span></div>
+            <div class="ticker-card" id="ticker-BNBUSDT"><span class="ticker-symbol">BNB</span><span class="ticker-price" id="price-BNBUSDT">--</span></div>
+        </section>
+
+        <section class="content-row">
+            <div class="panel panel-alerts">
+                <div class="panel-header"><h2>🔔 Live Whale Alerts</h2><span class="badge badge-live" id="alert-count-badge">0</span></div>
+                <div class="panel-body" id="alerts-feed">
+                    <div class="empty-state" id="alerts-empty"><span class="empty-icon">🐳</span><p>Chưa có cảnh báo nào...</p></div>
+                </div>
+            </div>
+            <div class="panel panel-chart">
+                <div class="panel-header"><h2>📊 Whale Activity</h2></div>
+                <div class="panel-body chart-container"><canvas id="activity-chart"></canvas></div>
+            </div>
+        </section>
+
+        <section class="content-row">
+            <div class="panel panel-config">
+                <div class="panel-header"><h2>⚙️ Ngưỡng Cảnh Báo</h2></div>
+                <div class="panel-body">
+                    <table class="config-table"><thead><tr><th>Coin</th><th>Ngưỡng (USD)</th><th>Trạng thái</th></tr></thead><tbody id="config-tbody"></tbody></table>
+                </div>
+            </div>
+            <div class="panel panel-history">
+                <div class="panel-header"><h2>📜 Lịch sử Gần đây</h2></div>
+                <div class="panel-body">
+                    <table class="history-table"><thead><tr><th>Thời gian</th><th>Coin</th><th>Giá trị (USD)</th></tr></thead><tbody id="history-tbody"></tbody></table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="app-footer">
+        <span>🐳 Whale Watch System &copy; 2026</span>
+        <span>Kafka · Spark · Redis · PostgreSQL</span>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

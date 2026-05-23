@@ -92,14 +92,15 @@ def consume_ohlcv(consumer, timeframe_name):
 
         if success:
             print(f'Send {timeframe_name} message Successfully')
-            set_candle(ohlcv_alert.symbol, ohlcv_alert.timeframe, ohlcv_alert.timestamp, ohlcv_alert.open,
-                ohlcv_alert.high, ohlcv_alert.low, ohlcv_alert.close, ohlcv_alert.volume, ohlcv_alert.buyer, ohlcv_alert.cnt)
-     
-            save_ohlcv(ohlcv_alert.symbol, ohlcv_alert.timeframe, ohlcv_alert.timestamp, ohlcv_alert.open,
-                ohlcv_alert.high, ohlcv_alert.low, ohlcv_alert.close, ohlcv_alert.volume, ohlcv_alert.buyer, ohlcv_alert.cnt)
-
         else:
             print(f'Error in send {timeframe_name} message after 3 tries')
+
+        # Luôn lưu candle bất kể Telegram thành công hay thất bại
+        set_candle(ohlcv_alert.symbol, ohlcv_alert.timeframe, ohlcv_alert.timestamp, ohlcv_alert.open,
+            ohlcv_alert.high, ohlcv_alert.low, ohlcv_alert.close, ohlcv_alert.volume, ohlcv_alert.buyer, ohlcv_alert.cnt)
+     
+        save_ohlcv(ohlcv_alert.symbol, ohlcv_alert.timeframe, ohlcv_alert.timestamp, ohlcv_alert.open,
+            ohlcv_alert.high, ohlcv_alert.low, ohlcv_alert.close, ohlcv_alert.volume, ohlcv_alert.buyer, ohlcv_alert.cnt)
 
 import threading
 def main():

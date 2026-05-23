@@ -2,3 +2,5 @@
 venv/
 __pycache__/
 step_start_project.txt
+node_modules/
+package-lock.json

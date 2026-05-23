@@ -67,3 +67,42 @@ def cache_alert(alert_data: dict): # for api ->redis
         print(f"[Redis] Cached alert: {symbol}")
     except Exception as e:
         print(f"[Redis] Lỗi cache alert: {e}")
+
+
+# ── API Query Functions ──
+
+def get_recent_alerts(limit=20):
+    """Lấy danh sách alerts gần đây từ Redis"""
+    try:
+        r = get_internal_redis_client()
+        raw_list = r.lrange("recent_alerts", 0, limit - 1)
+        return [json.loads(item) for item in raw_list]
+    except Exception as e:
+        print(f"[Redis] get_recent_alerts error: {e}")
+        return []
+
+
+def cache_price(symbol, price):
+    """Cache giá realtime vào Redis"""
+    try:
+        r = get_internal_redis_client()
+        r.hset("latest_prices", symbol, json.dumps({
+            "price": float(price),
+            "updated_at": __import__('datetime').datetime.utcnow().isoformat()
+        }))
+    except Exception as e:
+        print(f"[Redis] cache_price error: {e}")
+
+
+def get_latest_prices():
+    """Lấy giá mới nhất tất cả coins từ Redis"""
+    try:
+        r = get_internal_redis_client()
+        raw = r.hgetall("latest_prices")
+        result = {}
+        for symbol, data in raw.items():
+            result[symbol] = json.loads(data)
+        return result
+    except Exception as e:
+        print(f"[Redis] get_latest_prices error: {e}")
+        return {}
