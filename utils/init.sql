@@ -34,14 +34,15 @@ CREATE TABLE IF NOT EXISTS ohlcv_candles(
     id SERIAL PRIMARY KEY,
     symbol VARCHAR(20) NOT NULL,
     timeframe VARCHAR(10) NOT NULL, -- 5m, 10m
-    start_time TIMESTAMP NOT NULL,  -- time for candles
-    end_time TIMESTAMP NOT NULL,
-    open_price NUMERIC(18, 8) NOT NULL,
-    high_price NUMERIC(18, 8) NOT NULL,
-    low_price NUMERIC(18, 8) NOT NULL,
-    close_price NUMERIC(18, 8) NOT NULL,
+    timestamp TIMESTAMP NOT NULL,  -- time for candles
+    open NUMERIC(18, 8) NOT NULL,
+    high NUMERIC(18, 8) NOT NULL,
+    low NUMERIC(18, 8) NOT NULL,
+    close NUMERIC(18, 8) NOT NULL,
     volume NUMERIC(18, 8) NOT NULL,
+    cnt INTEGER NOT NULL,
+    buyer BOOLEAN NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE ohlcv_candles 
-ADD CONSTRAINT unique_candle UNIQUE (symbol, timeframe, start_time); -- update candles easy
+ADD CONSTRAINT unique_candle UNIQUE (symbol, timeframe, timestamp); -- update candles easy

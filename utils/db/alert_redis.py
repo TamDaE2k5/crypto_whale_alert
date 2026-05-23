@@ -67,7 +67,3 @@ def cache_alert(alert_data: dict): # for api ->redis
         print(f"[Redis] Cached alert: {symbol}")
     except Exception as e:
         print(f"[Redis] Lỗi cache alert: {e}")
-
-# cache_price
-# get_latest_prices
-# get_recent_alerts

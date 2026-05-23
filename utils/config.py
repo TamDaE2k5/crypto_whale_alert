@@ -12,6 +12,8 @@ KAFKA_BROKER_INTERNAL = os.getenv("KAFKA_BROKER_INTERNAL", "kafka:29092")  # T�
 
 TOPIC_TRADES = "crypto_trades"
 TOPIC_ALERTS = "whale_alerts"
+TOPIC_CANDLES_1M = "candles_1m"
+TOPIC_CANDLES_5M = "candles_5m"
 TOPIC_TRADES_PARTITIONS = 3
 
 # ──────────────────────────────────────────────

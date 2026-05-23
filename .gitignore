@@ -1,5 +1,4 @@
 .env
 venv/
 __pycache__/
-services/processor/ohlcv_job.py 
 step_start_project.txt

@@ -47,12 +47,19 @@ def parse_whale_alert(raw) -> Optional[WhaleAlertSchema]:
         return None
 
 def format_whale_alert(alert: WhaleAlertSchema) -> str:
-    side_emoji = "🔴" if alert.total_usd > 500000 else "🟡"
-    
+    if alert.total_usd >= 1_000_000:
+        level_icon = "🚨🚨🚨" 
+        alert_title = "MASSIVE WHALE DETECTED"
+    else:
+        level_icon = "⚠️"     
+        alert_title = "WHALE ACTIVITY DETECTED"
+
     return (
-        f"🚨 *FIND OUT WHALE!* 🚨\n\n"
-        f"{side_emoji} *Symbol:* {alert.symbol}\n"
-        f"💵 *Total value:* ${alert.total_usd:,.2f}\n"
-        f"⏰ *Time:* {alert.window_start} → {alert.window_end}\n"
-        f"🐳 _Spark still following the Whales..._"
+        f"{level_icon} *{alert_title}* {level_icon}\n\n"
+        f"💎 *Coin:* #{alert.symbol}\n"
+        f"💵 *Value Transaction:* `${alert.total_usd:,.2f}`\n"
+        f"⏱️ *Window:* 10 Giây\n"
+        f"🕒 *At time:* `{alert.window_start}`\n"
+        f"───────────────\n"
+        f"🐳 _Powered by Spark Structured Streaming_"
     )

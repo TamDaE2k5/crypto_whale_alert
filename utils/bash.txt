@@ -1,5 +1,5 @@
 Spark job
-docker exec -it spark-master /opt/spark/bin/spark-submit --driver-memory 512m --executor-memory 1g --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 /opt/spark/work-dir/app/alert_job.py
+docker exec -it spark-master /opt/spark/bin/spark-submit --driver-memory 512m --executor-memory 1g --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 /opt/spark/work-dir/app/main.py
 
 Service
 python .\services\ingestor\main.py

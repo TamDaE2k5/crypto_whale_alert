@@ -41,7 +41,3 @@ def save_alert_history(symbol: str, total_usd: float, price: float = None,
         if conn:
             conn.close()
 
-# get_alert_history
-# get_alert_stats
-# get_configs
-# update_config

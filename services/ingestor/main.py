@@ -9,10 +9,8 @@ from kafka.errors import TopicAlreadyExistsError, NoBrokersAvailable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from utils.config import (
     KAFKA_BROKER_EXTERNAL,
-    TOPIC_TRADES,
-    TOPIC_ALERTS,
-    TOPIC_TRADES_PARTITIONS,
-    BINANCE_WS_URL,
+    TOPIC_TRADES, TOPIC_ALERTS, TOPIC_CANDLES_1M, TOPIC_CANDLES_5M,
+    TOPIC_TRADES_PARTITIONS, BINANCE_WS_URL,
 )
 
 
@@ -44,6 +42,8 @@ def create_topic():
                 replication_factor=1,
             ),
             NewTopic(name=TOPIC_ALERTS, num_partitions=1, replication_factor=1),
+            NewTopic(name=TOPIC_CANDLES_1M, num_partitions=1, replication_factor=1),
+            NewTopic(name=TOPIC_CANDLES_5M, num_partitions=1, replication_factor=1),
         ]
 
         admin.create_topics(topic)
